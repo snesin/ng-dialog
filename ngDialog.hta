@@ -1,0 +1,59 @@
+<html>
+<head>
+<style>
+body,table,input {
+   font-family:verdana;
+}
+.code {
+   font-family:fixedsys;
+   font-size:16px;
+}
+.leader {
+   border-right:none;
+}
+.trailer {
+   display:inline-block;
+   svertical-align:top;
+    border-top-style: inset;
+    border-top-width: 2px;
+    border-bottom-style: inset;
+    border-bottom-width: 2px;
+    border-right-style: inset;
+    border-right-width: 2px;
+    border-left: none;
+padding-top:1px;
+padding-bottom:1px;
+padding-right:1px;
+
+}
+</style>
+</head>
+<body>
+<input type=button value="Refresh" onclick="window.location.reload(true);"/>
+<table>
+<tr>
+<td align=right nowrap>Dialog Name:</td>
+<td nowrap><input type=text class="code leader" id="dialogName" style="text-align:right" value="Authentication" size=30><span class="code trailer">Dialog</span></td>
+</tr>
+<tr>
+<td align=right nowrap>Dialog Width:</td>
+<td nowrap><input type=text class="code leader" id="dialogWidth" style="text-align:right" value="256" size=6><span class="code trailer">px</span></td>
+</tr>
+<tr>
+<td align=right nowrap>Sub Names:</td>
+<td><input type=text class="code" id="subDialogNames" style="width:100%" value="LogIn,SignUp"></td>
+</tr>
+<tr>
+<td align=right nowrap valign=top>File Name Style:</td>
+<td>
+<input type=radio id="fileNameStyle_augularStandard" name="fileNameStyle" checked><label class="code" for="fileNameStyle_augularStandard">angular-standard.component.ts</label><br>
+<input type=radio id="fileNameStyle_sensibleCamelCase" name="fileNameStyle"><label class="code" for="fileNameStyle_sensibleCamelCase">SensibleCamelCaseComponent.ts</label>
+</td>
+</tr>
+<tr>
+<td align=right nowrap>Path to Dialogs:</td>
+<td nowrap><input type=text class="code" id="pathToDialogs" value="../Dialogs" style="width:100%"></td>
+</tr>
+</table>
+</body>
+</html>
