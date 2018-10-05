@@ -1,59 +1,220 @@
 <html>
 <head>
-<style>
+  <style>
 body,table,input {
-   font-family:verdana;
+  font-family:verdana;
 }
 .code {
-   font-family:fixedsys;
-   font-size:16px;
+  font-family:fixedsys;
+  font-size:16px;
 }
 .leader {
-   border-right:none;
+  border-right:none;
 }
 .trailer {
-   display:inline-block;
-   svertical-align:top;
-    border-top-style: inset;
-    border-top-width: 2px;
-    border-bottom-style: inset;
-    border-bottom-width: 2px;
-    border-right-style: inset;
-    border-right-width: 2px;
-    border-left: none;
-padding-top:1px;
-padding-bottom:1px;
-padding-right:1px;
-
+  display:inline-block;
+  border-top-style: inset;
+  border-top-width: 2px;
+  border-bottom-style: inset;
+  border-bottom-width: 2px;
+  border-right-style: inset;
+  border-right-width: 2px;
+  border-left: none;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  padding-right: 1px;
 }
 </style>
+  <script>
+var config = {
+  dialogName: "MyNew",
+  dialogWidth: 200,
+  dialogViews: "FirstPart,SecondPart",
+  templateFolder: "",
+  selectorLead: "app-Dialog",
+  fileNameFormat: "angular",
+  justExperiment: false,
+  outputDirectory: "",
+  templateList: []
+};
+
+var fso = new ActiveXObject("Scripting.FileSystemObject");
+if (fso.FileExists("ngDialog.config.json")) {
+  var contents;
+  var stream = fso.GetFile("ngDialog.config.json").OpenAsTextStream(1);
+  try {
+    eval("contents=" + stream.ReadAll() + ";");
+    stream.Close();
+    stream = null;
+  }
+  catch (e) {
+    stream.Close();
+    stream = null;
+    throw (e);
+  }
+  for (var i in contents)
+    config[i] = contents[i];
+}
+
+if (config.templateList.length === 0)
+  for (var subfolders = new Enumerator(fso.GetFolder(".").SubFolders); !subfolders.atEnd(); subfolders.moveNext())
+    config.templateList.push(subfolders.item().Name);
+
+for (var i = 0; i < config.templateList.length; i++)
+  config.templateList[i] = { path: config.templateList[i], isComplex: isTemplateComplex(fso.GetFolder(config.templateList[i])) };
+
+if (config.fileNameFormat !== "CamelCase")
+  config.fileNameFormat = "angular";
+function isTemplateComplex(folder) {
+  for (var files = new Enumerator(folder.Files); !files.atEnd(); files.moveNext())
+    if (isNameComplex(files.item().Name))
+      return true;
+  for (var subfolders = new Enumerator(folder.SubFolders); !subfolders.atEnd(); subfolders.moveNext())
+    if (isNameComplex(subfolders.item().Name) || isTemplateComplex(subfolders.item()))
+      return true;
+  return false;
+}
+function isNameComplex(name) {
+  return name.indexOf("{$") >= 0;
+}
+
+function body_onload() {
+  document.getElementById("dialogName").value = config.dialogName || "";
+  document.getElementById("dialogWidth").value = config.dialogWidth || 200;
+  document.getElementById("dialogViews").value = config.dialogViews || "";
+  document.getElementById("selectorLead").value = config.selectorLead || "app-Dialog";
+  document.getElementById("fileNameFormat_" + config.fileNameFormat).checked = true;
+  document.getElementById("justExperiment").checked = !!config.justExperiment;
+  document.getElementById("outputDirectory").value = config.outputDirectory || "";
+  updateDependencies();
+}
+var lastComplex = null;
+function updateDependencies() {
+  var dialogName = document.getElementById("dialogName").value.replace(/\W/g, "");
+  var dialogViews = document.getElementById("dialogViews").value.replace(/\W/g, "");
+  var templateFolder = document.getElementById("templateFolder").value.replace(/\W/g, "");
+  var outputDirectory = document.getElementById("outputDirectory").value.replace(/\W/g, "");
+  var isComplex = dialogViews.length > 0;
+  if (isComplex !== lastComplex) {
+    var templateFolder = document.getElementById("templateFolder");
+    var prevValue = templateFolder.value || config.templateFolder;
+    while (templateFolder.length > 0)
+      templateFolder.remove(0);
+    for (var i = 0; i < config.templateList.length; i++)
+      if (config.templateList[i].isComplex === isComplex) {
+        var option = document.createElement("option");
+        option.value = config.templateList[i].path;
+        if (config.templateList[i].path === prevValue)
+          option.selected = true;
+        option.innerText = config.templateList[i].path;
+        templateFolder.appendChild(option);
+      }
+    lastComplex = isComplex;
+  }
+  var label = document.getElementById("selectorLead_label");
+  label.innerText = dialogName || "MyDialog";
+  var label = document.getElementById("fileNameFormat_angular_label");
+  label.innerText = angularStandardName(dialogName) || "angular-standard";
+  var label = document.getElementById("fileNameFormat_CamelCase_label");
+  label.innerText = dialogName || "SensibleCamelCase";
+
+  document.getElementById("createButton").disabled = !dialogName || !templateFolder || !outputDirectory;
+}
+function angularStandardName(name) {
+  return name.replace(/([a-z])([A-Z])/g, function ($0, $1, $2) { return $1 + "-" + $2; }).toLowerCase();
+}
+function writeToConsole(value) {
+  var c = document.getElementById("consoleOutput");
+  c.value += "\n" + value;
+  c.scrollTop = 1000000000;
+}
+function generateDialogSkeleton() {
+  var dialogName = document.getElementById("dialogName").value.replace(/\W/g, "");
+  var dialogViews = document.getElementById("dialogViews").value.replace(/^\W+/, "").replace(/\W+$/, "").replace(/\W+/, ",");
+  var templateFolder = document.getElementById("templateFolder").value.replace(/^\s+/, "").replace(/\s+$/, "");
+  var outputDirectory = document.getElementById("outputDirectory").value.replace(/^\s+/, "").replace(/\s+$/, "");
+  var dialogWidth = document.getElementById("dialogWidth").value;
+  var fileNameFormat = document.getElementById("fileNameFormat_CamelCase").checked ? "CamelCase" : "angular";
+  var selectorLead = document.getElementById("selectorLead").value.replace(/^\s+/, "").replace(/\s+$/, "");
+  var justExperiment = document.getElementById("justExperiment").checked ? true : false;
+
+  var commandLine = "";
+  commandLine += "node";
+  commandLine += " ngDialog.js";
+  commandLine += " \"-o=" + outputDirectory + "\"";
+  commandLine += " \"-t=" + templateFolder + "\"";
+  commandLine += " \"-d=" + dialogName + "\"";
+  commandLine += " \"-v=" + dialogViews + "\"";
+  commandLine += " \"-w=" + dialogWidth + "\"";
+  commandLine += " \"-s=" + selectorLead + "\"";
+  commandLine += " \"-f=" + fileNameFormat + "\"";
+  if (justExperiment)
+    commandLine += " -x";
+
+  writeToConsole(commandLine);
+  var shell = new ActiveXObject("WScript.Shell")
+  shell.Run("cmd /C " + commandLine + " >out.txt", 0, true);
+
+  if (fso.FileExists("out.txt")) {
+    var stream = fso.GetFile("out.txt").OpenAsTextStream(1);
+    writeToConsole(stream.ReadAll());
+    stream.Close();
+    stream = null;
+    fso.DeleteFile("out.txt");
+  }
+}
+  </script>
 </head>
-<body>
-<input type=button value="Refresh" onclick="window.location.reload(true);"/>
-<table>
-<tr>
-<td align=right nowrap>Dialog Name:</td>
-<td nowrap><input type=text class="code leader" id="dialogName" style="text-align:right" value="Authentication" size=30><span class="code trailer">Dialog</span></td>
-</tr>
-<tr>
-<td align=right nowrap>Dialog Width:</td>
-<td nowrap><input type=text class="code leader" id="dialogWidth" style="text-align:right" value="256" size=6><span class="code trailer">px</span></td>
-</tr>
-<tr>
-<td align=right nowrap>Sub Names:</td>
-<td><input type=text class="code" id="subDialogNames" style="width:100%" value="LogIn,SignUp"></td>
-</tr>
-<tr>
-<td align=right nowrap valign=top>File Name Style:</td>
-<td>
-<input type=radio id="fileNameStyle_augularStandard" name="fileNameStyle" checked><label class="code" for="fileNameStyle_augularStandard">angular-standard.component.ts</label><br>
-<input type=radio id="fileNameStyle_sensibleCamelCase" name="fileNameStyle"><label class="code" for="fileNameStyle_sensibleCamelCase">SensibleCamelCaseComponent.ts</label>
-</td>
-</tr>
-<tr>
-<td align=right nowrap>Path to Dialogs:</td>
-<td nowrap><input type=text class="code" id="pathToDialogs" value="../Dialogs" style="width:100%"></td>
-</tr>
-</table>
+
+<body onload="body_onload()">
+  <input type=button value="Refresh" onclick="window.location.reload(true);" />
+  <table>
+    <tr>
+      <td align=right nowrap>Dialog Name:</td>
+      <td nowrap><input type=text class="code leader" id="dialogName" style="text-align:right" value="Authentication"
+          size=30 onkeyup="updateDependencies()"><span class="code trailer">Dialog</span></td>
+    </tr>
+    <tr>
+      <td align=right nowrap>Dialog Width:</td>
+      <td nowrap><input type=text class="code leader" id="dialogWidth" style="text-align:right" value="256" size=6><span
+          class="code trailer">px</span></td>
+    </tr>
+    <tr>
+      <td align=right nowrap>View Names:</td>
+      <td><input type=text class="code" id="dialogViews" style="width:100%" value="LogIn,SignUp" onkeyup="updateDependencies()"></td>
+    </tr>
+    <tr>
+      <td align=right nowrap>Template:</td>
+      <td><select class="code" id="templateFolder" style="width:100%" value="" onchange="updateDependencies()"></select></td>
+    </tr>
+    <tr>
+      <td align=right nowrap>Selector:</td>
+      <td nowrap><input type=text class="code leader" id="selectorLead" style="text-align:right" value="app-Dialogs"
+          size=30><span class="code trailer">-<span id="selectorLead_label">MyDialog</span></span></td>
+    </tr>
+    <tr>
+      <td align=right nowrap valign=top>File Name Style:</td>
+      <td>
+        <input type=radio id="fileNameFormat_angular" name="fileNameFormat" checked><label class="code" for="fileNameFormat_angular"/>
+        <span id="fileNameFormat_angular_label">angular-standard</span>.module.ts</label><br>
+        <input type=radio id="fileNameFormat_CamelCase" name="fileNameFormat"><label class="code" for="fileNameFormat_CamelCase"/>
+        <span id="fileNameFormat_CamelCase_label">SensibleCamelCase</span>Module.ts</label>
+      </td>
+    </tr>
+    <tr>
+      <td align=right nowrap>Path to Dialogs:</td>
+      <td nowrap><input type=text class="code" id="outputDirectory" value="../Dialogs" style="width:100%" onkeyup="updateDependencies()"></td>
+    </tr>
+    <tr>
+      <td align=right nowrap>Test only:</td>
+      <td nowrap><input type=checkbox id="justExperiment"><label for="justExperiment">Do not create directories
+          or files.</label></td>
+    </tr>
+    <tr>
+      <td colspan=2 align=middle nowrap><input type=button id="createButton" value="Create Dialog Skeleton" disabled
+          onclick="generateDialogSkeleton()"></td>
+    </tr>
+  </table>
+  <textarea id="consoleOutput" wrap=off readonly rows=20 style="width:100%;background-color:#eeeeee"></textarea>
 </body>
 </html>

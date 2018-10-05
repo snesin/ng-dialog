@@ -8,18 +8,20 @@ import { {#NAME}DialogComponent } from './{#FILE+DialogComponent}';
 
 
 @NgModule({
-   declarations: [
-         {#NAME}DialogComponent
-         ],
-         imports: [
-         BrowserModule,
-         CommonModule,
-         MatDialogModule
-         ],
-         providers: [
-            {#NAME}Dialog
-         ],
-         entryComponents: [{#NAME}DialogComponent]
+  declarations: [
+    {#NAME}DialogComponent
+  ],
+  imports: [
+    BrowserModule,
+    CommonModule,
+    MatDialogModule
+  ],
+  providers: [
+    {#NAME}Dialog
+  ],
+  entryComponents: [
+    {#NAME}DialogComponent
+  ]
 })
 export class {#NAME}DialogModule {
 }
