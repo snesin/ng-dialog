@@ -22,7 +22,7 @@ function processArguments(args) {
     var value = args[i].substr(3);
     switch (flag) {
       case "-d=":
-        dialogName = value;
+        dialogName = value.replace(/^\s+/, "").replace(/\s+$/, "");
         break;
       case "-v=":
         dialogViews = value.replace(/^\W+/, "").replace(/\W+$/, "").replace(/\W+/, ",").split(",");
@@ -37,6 +37,7 @@ function processArguments(args) {
         fileNameFormat = value;
         break;
       case "-t=":
+        templateFolder = value.replace(/^\s+/, "").replace(/\s+$/, "");
         break;
       case "-o=":
         outputDirectory = value;
