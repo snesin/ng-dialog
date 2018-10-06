@@ -10,59 +10,101 @@ var justExperiment = false;      // -x
 var fs = require('fs');
 var createdDirectories = {};
 
-processArguments(process.argv);
+if (process.argv.length < 3)
+  return showHelp();
 
-function processArguments(args) {
-  if (args.length < 3)
-    return showHelp();
-  for (var i = 2; i < args.length; i++) {
-    if (args[i].substr(0, 2) === "-h")
-      return showHelp();
-    var flag = args[i].substr(0, 3);
-    var value = args[i].substr(3);
-    switch (flag) {
-      case "-d=":
-        dialogName = value.replace(/^\s+/, "").replace(/\s+$/, "");
-        break;
-      case "-v=":
-        dialogViews = value.replace(/^\W+/, "").replace(/\W+$/, "").replace(/\W+/, ",").split(",");
-        break;
-      case "-w=":
-        dialogWidth = parseFloat(value);
-        break;
-      case "-s=":
-        selectorLead = value;
-        break;
-      case "-f=":
-        fileNameFormat = value;
-        break;
-      case "-t=":
-        templateFolder = value.replace(/^\s+/, "").replace(/\s+$/, "");
-        break;
-      case "-o=":
-        outputDirectory = value;
-        break;
-      case "-x":
-        justExperiment = true;
-        break;
-      default:
-        console.error("unknown flag " + flag.substr(0, 2));
-        break;
-    }
-  }
+processArguments(process.argv.slice(2), "", function () {
   if (!dialogName)
-    return console.error("Missing dialog name: -d=DialogName");
+    return console.log("Missing dialog name: -d=DialogName");
   if (!templateFolder)
-    return console.error("Missing template folder: -t=TemplateFolder");
+    return console.log("Missing template folder: -t=TemplateFolder");
   if (!outputDirectory)
-    return console.error("Missing output path to Dialogs directory : -o=DialogsDirectory");
+    return console.log("Missing output path to Dialogs directory : -o=DialogsDirectory");
   processDirectory(templateFolder, function (err) {
     if (err)
-      return console.error(err);
+      return console.log(err);
     console.log("DONE");
     if (justExperiment)
       console.log("===== -x flag is on, no directories or files were created =====");
   });
+});
+function processConfigFile(configFile, callback) {
+  fs.readFile(file, 'utf8', function (err, contents) {
+    if (err) {
+      if (callback)
+        return callback(err);
+      throw err;
+    }
+    contents = contents.replace(/\r\n/g, "\n").split('\n');
+    processArguments(contents, configFile, callback);
+  });
+}
+function processArguments(args, relativeTo, callback) {
+  var argIndex = 0;
+  function processNextArg() {
+    if (argIndex < args.length) {
+      if (args[argIndex].substr(0, 2) === "-h")
+        return showHelp();
+      if (args[argIndex++].search(/^\s*(\-?\w+)\s*=\s*(.*?)(?:\s+#.*)?\s*$/) === 0) {
+        var flag = RegExp.$1;
+        var value = RegExp.$2.replace(/^\s+/, "").replace(/\s+$/, "");
+        processArgument(flag, value, relativeTo, processNextArg);
+      } else
+        processNextArg();
+    } else
+      callback && callback();
+  }
+  processNextArg();
+}
+function processArgument(flag, value, relativeTo, callback) {
+  switch (flag) {
+    case "-c":
+    case "extends":
+      return processConfigFile(relativePath(relativeTo, value), callback)
+    case "-d":
+    case "dialogName":
+      dialogName = value;
+      break;
+    case "-v":
+    case "dialogViews":
+      dialogViews = value.replace(/\W+/, ",").split(",");
+      break;
+    case "-w":
+    case "dialogWidth":
+      dialogWidth = parseFloat(value);
+      break;
+    case "-s":
+    case "selectorLead":
+      selectorLead = value;
+      break;
+    case "-f":
+    case "fileNameFormat":
+      fileNameFormat = value;
+      break;
+    case "-t":
+    case "templateFolder":
+      templateFolder = relativePath(relativeTo, value);
+      break;
+    case "-o":
+    case "outputDirectory":
+      outputDirectory = relativePath(relativeTo, value);
+      break;
+    case "-x":
+    case "justExperiment":
+      justExperiment = true;
+      break;
+    default:
+      console.log("ignoring unknown flag " + flag);
+      break;
+  }
+  callback && callback();
+}
+
+function relativePath(from, to) {
+  from = from.split('/');
+  from.pop();
+  from.push(to);
+  return from.join('/');
 }
 
 function showHelp() {

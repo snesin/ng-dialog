@@ -26,45 +26,64 @@ body,table,input {
 }
 </style>
   <script>
+var defaultConfigFile = "config.txt";
+var supportedFileNameFormats = ["angular", "CamelCase"];
+var templateList = [];
+var fso = new ActiveXObject("Scripting.FileSystemObject");
+
 var config = {
   dialogName: "",
   dialogWidth: 200,
   dialogViews: "",
   templateFolder: "",
   selectorLead: "app-Dialog",
-  fileNameFormat: "angular",
+  fileNameFormat: closestFileNameFormat(),
   justExperiment: false,
   outputDirectory: "",
-  templateList: []
+  templateLibrary: "Templates"
 };
 
-var fso = new ActiveXObject("Scripting.FileSystemObject");
-if (fso.FileExists("ngDialog.config.json")) {
-  var contents;
-  var stream = fso.GetFile("ngDialog.config.json").OpenAsTextStream(1);
-  try {
-    eval("contents=" + stream.ReadAll() + ";");
-    stream.Close();
-    stream = null;
-  }
-  catch (e) {
-    stream.Close();
-    stream = null;
-    throw (e);
-  }
-  for (var i in contents)
-    config[i] = contents[i];
+if (fso.FileExists(defaultConfigFile))
+  readConfigFile(defaultConfigFile);
+
+for (var subfolders = new Enumerator(fso.GetFolder(config.templateLibrary).SubFolders); !subfolders.atEnd(); subfolders.moveNext()) {
+  var template=config.templateLibrary+"/"+subfolders.item().Name;
+  templateList.push({ path: template, isComplex: isTemplateComplex(fso.GetFolder(template)) });
 }
 
-if (config.templateList.length === 0)
-  for (var subfolders = new Enumerator(fso.GetFolder("Templates").SubFolders); !subfolders.atEnd(); subfolders.moveNext())
-    config.templateList.push("Templates/"+subfolders.item().Name);
+function readConfigFile(configFile) {
+  var stream = fso.GetFile(configFile).OpenAsTextStream(1);
+  var contents = stream.ReadAll().replace(/\r\n/g, "\n").split("\n");
+  stream.Close();
+  stream = null;
+  for (var i = 0; i < contents.length; i++)
+    if (contents[i].search(/^\s*(\w+)\s*=\s*(.+?)(?:\s+#.*)?\s*$/) === 0) {
+      var key = RegExp.$l;
+      var value = RegExp.$2;
+      switch (key) {
+      case "extends":
+        readConfigFile(relativePath(configFile, value));
+        break;
+      case "dialogViews":
+        config[key] = value.replace(/\W+/, ",");
+        break;
+      case "fileNameFormat":
+        config[key] = closestFileNameFormat(value);
+        break;
+      case "justExperiment":
+        config[key] = value !== "false";
+        break;
+      case "outputFolder" :
+      case "templateLibrary" :
+        config[key] = relativePath(configFile,value);
+        break;
+      default:
+        config[key] = value;
+        break;
+    }
+  }
+}
 
-for (var i = 0; i < config.templateList.length; i++)
-  config.templateList[i] = { path: config.templateList[i], isComplex: isTemplateComplex(fso.GetFolder(config.templateList[i])) };
-
-if (config.fileNameFormat !== "CamelCase")
-  config.fileNameFormat = "angular";
 function isTemplateComplex(folder) {
   for (var files = new Enumerator(folder.Files); !files.atEnd(); files.moveNext())
     if (isNameComplex(files.item().Name))
@@ -77,7 +96,15 @@ function isTemplateComplex(folder) {
 function isNameComplex(name) {
   return name.indexOf("{$") >= 0;
 }
-
+function relativePath(from,to){
+  from=from.split('/');
+  from.pop();
+  from.push(to);
+  return from.join('/');
+}
+function closestFileNameFormat(name) {
+  return name && supportedFileNameFormats.indexOf(value) >= 0 ? name : supportedFileNameFormats[0];
+}
 function body_onload() {
   document.getElementById("dialogName").value = config.dialogName || "";
   document.getElementById("dialogWidth").value = config.dialogWidth || 200;
@@ -100,13 +127,13 @@ function updateDependencies() {
     var prevValue = templateFolder.value || config.templateFolder;
     while (templateFolder.length > 0)
       templateFolder.remove(0);
-    for (var i = 0; i < config.templateList.length; i++)
-      if (config.templateList[i].isComplex === isComplex) {
+    for (var i = 0; i < templateList.length; i++)
+      if (templateList[i].isComplex === isComplex) {
         var option = document.createElement("option");
-        option.value = config.templateList[i].path;
-        if (config.templateList[i].path === prevValue)
+        option.value = templateList[i].path;
+        if (templateList[i].path === prevValue)
           option.selected = true;
-        option.innerText = config.templateList[i].path;
+        option.innerText = templateList[i].path;
         templateFolder.appendChild(option);
       }
     lastComplex = isComplex;

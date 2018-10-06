@@ -1,0 +1,9 @@
+# Anything following a # is ignored. Blank lines are ignored.
+
+# extends = Relative/Path/To/Other/ConfigFile
+# outputDirectory = Relative/Path/To/Project/Dialogs
+# templateLibrary = Relative/Path/To/Template/Library
+# dialogWidth = 200
+# selectorLead = app-dialog
+# fileNameFormat = angular # angular | CamelCase
+# justExperiment = true # true | false
