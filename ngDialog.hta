@@ -1,5 +1,6 @@
 <html>
 <head>
+  <HTA:APPLICATION ID="ngDialog" APPLICATIONNAME="ng-dialog" />
   <style>
 body,table,input {
   font-family:verdana;
@@ -24,7 +25,7 @@ body,table,input {
   padding-bottom: 1px;
   padding-right: 1px;
 }
-</style>
+  </style>
 </head>
 
 <body onload="body_onload()">
@@ -81,6 +82,8 @@ body,table,input {
 </html>
 <script>
 var defaultConfigFile = "ngDialog.cfg";
+if (ngDialog.commandLine.search(/^.*?ngDialog.hta"?\s"?(.+?)"?\s*$/) === 0)
+  defaultConfigFile = RegExp.$1;
 var supportedFileNameFormats = ["angular", "CamelCase"];
 var templateList = [];
 var fso = new ActiveXObject("Scripting.FileSystemObject");
@@ -99,6 +102,8 @@ var config = {
 
 if (fso.FileExists(defaultConfigFile))
   readConfigFile(defaultConfigFile);
+else if (defaultConfigFile)
+  writeToConsole("Settings file not found: "+defaultConfigFile);
 
 for (var subfolders = new Enumerator(fso.GetFolder(config.templateLibrary).SubFolders); !subfolders.atEnd(); subfolders.moveNext()) {
   var template=config.templateLibrary+"/"+subfolders.item().Name;
