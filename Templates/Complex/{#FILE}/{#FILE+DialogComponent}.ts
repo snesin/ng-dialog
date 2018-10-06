@@ -3,13 +3,13 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 
 import { DialogService } from '../DialogService';
 
-import { DialogMode } from './DialogMode';
+import { DialogView } from './DialogView';
 {$REPEAT}import {I{#NAME}Dialog{$NAME}Data,I{#NAME}Dialog{$NAME}Response, {$NAME}Action } from './{$FILE}/{$FILE+Component}';
 {$REPEATEND}
 export type I{#NAME}DialogData={$REPEAT}I{#NAME}Dialog{$NAME}Data{$REPEATDELIM} | {$REPEATEND};
 export type I{#NAME}DialogResponse={$REPEAT}I{#NAME}Dialog{$NAME}Response{$REPEATDELIM} | {$REPEATEND};
-export type IModeAndData={
-   mode:DialogMode;
+export type IViewAndData={
+   view:DialogView;
    data:I{#NAME}DialogData;
 }
 
@@ -19,14 +19,14 @@ export type IModeAndData={
 })
 export class {#NAME}DialogComponent implements OnInit, OnDestroy {
 
-   mode:DialogMode;
+   view:DialogView;
    data:I{#NAME}DialogData;
   constructor(
     public dialogRef: MatDialogRef<{#NAME}DialogComponent>,
-    @Inject(MAT_DIALOG_DATA) private modeAndData: I{#NAME}DialogData
+    @Inject(MAT_DIALOG_DATA) private viewAndData: I{#NAME}DialogData
   ) {
-     this.mode=modeAndData.mode;
-     this.data=modeAndData.data;
+     this.view=viewAndData.view;
+     this.data=viewAndData.data;
      }
 
   ngOnInit() {
@@ -39,11 +39,7 @@ export class {#NAME}DialogComponent implements OnInit, OnDestroy {
 {$REPEAT}   action{$NAME}(action:{$NAME}Action): void {
       if (action.type==="CLOSE")
          this.close(action.response);
-      if (action.type==="MODE")
-         this.mode(action.mode);
+      if (action.type==="VIEW")
+         this.view=action.view;
    }
-{$REPEATEND}
-
-
-
-}
+{$REPEATEND}}

@@ -238,7 +238,7 @@ function cookContents(contents, viewIndex) {
   if (typeof (viewIndex) === "number") {
     contents = contents.replace(/\{\$NAME\}/g, nameFormat(dialogViews[viewIndex]));
     contents = contents.replace(/\{\$FILE(?:\+(\w+))?\}/g, function ($0, $1) { return fileFormat(dialogViews[viewIndex], $1); });
-    contents = contents.replace(/\{\$MODE\}/g, modeFormat(dialogViews[viewIndex]));
+    contents = contents.replace(/\{\$ID\}/g, idFormat(dialogViews[viewIndex]));
   }
   contents = contents.replace(/\{\#NAME\}/g, nameFormat(dialogName));
   contents = contents.replace(/\{\#FILE(?:\+(\w+))?\}/g, function ($0, $1) { return fileFormat(dialogName, $1); });
@@ -310,7 +310,7 @@ function isAngularClass(name) {
   return ["component", "module", "service"].indexOf(name) >= 0;
 }
 
-function modeFormat(name) {
+function idFormat(name) {
   return splitName(name).toUpperCase().replace(/\-/g, "_");
 }
 

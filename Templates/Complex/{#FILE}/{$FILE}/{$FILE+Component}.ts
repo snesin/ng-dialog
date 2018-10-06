@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, Input, Output, EventEmitter } from '@angular/core';
 
-import { DialogMode } from '../{#FORMAT+DialogMode}';
+import { DialogView } from '../{#FORMAT+DialogView}';
 
 export interface I{#NAME}Dialog{$NAME}Data {
 };
@@ -10,11 +10,11 @@ interface I{$NAME}CloseAction {
   action: 'CLOSE';
   response?: I{#NAME}Dialog{$NAME}Response;
 }
-interface I{$NAME}ModeAction {
-  action: 'MODE';
-  mode: DialogMode;
+interface I{$NAME}ViewAction {
+  action: 'VIEW';
+  view: DialogView;
 }
-export type {$NAME}Action = I{$NAME}CloseAction | I{$NAME}ModeAction;
+export type {$NAME}Action = I{$NAME}CloseAction | I{$NAME}ViewAction;
 
 @Component({
   selector: '{#TAGLEAD}-{#NAME}-{$NAME}',
@@ -39,10 +39,10 @@ export class {$NAME}Component implements OnInit, OnDestroy {
     };
     this.emitter.emit(action);
   }
-  changeMode(mode: DialogMode) {
-    const action: I{$NAME}ModeAction = {
-      action: 'MODE',
-      mode: mode
+  changeView(view: DialogView) {
+    const action: I{$NAME}ViewAction = {
+      action: 'VIEW',
+      view: view
     };
     this.emitter.emit(action);
   }
