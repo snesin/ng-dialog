@@ -57,8 +57,8 @@ if (fso.FileExists("ngDialog.config.json")) {
 }
 
 if (config.templateList.length === 0)
-  for (var subfolders = new Enumerator(fso.GetFolder(".").SubFolders); !subfolders.atEnd(); subfolders.moveNext())
-    config.templateList.push(subfolders.item().Name);
+  for (var subfolders = new Enumerator(fso.GetFolder("Templates").SubFolders); !subfolders.atEnd(); subfolders.moveNext())
+    config.templateList.push("Templates/"+subfolders.item().Name);
 
 for (var i = 0; i < config.templateList.length; i++)
   config.templateList[i] = { path: config.templateList[i], isComplex: isTemplateComplex(fso.GetFolder(config.templateList[i])) };
