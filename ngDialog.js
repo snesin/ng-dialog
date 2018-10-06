@@ -91,7 +91,7 @@ function processArgument(flag, value, relativeTo, callback) {
       break;
     case "-x":
     case "justExperiment":
-      justExperiment = true;
+      justExperiment = value!=="false";
       break;
     default:
       console.log("ignoring unknown flag " + flag);
@@ -108,7 +108,7 @@ function relativePath(from, to) {
 }
 
 function showHelp() {
-  console.log("ndDialog -o=DialogsOutputPath -t=TemplatePath -d=DialogName [-v=View1,View2,...] [-w=Width] [-s=SelectorLead] [-f=angular|CamelCase] [-x(experiment, create no files, just show work)]");
+  console.log("ndDialog -o=DialogsOutputPath -t=TemplatePath -d=DialogName [-v=View1,View2,...] [-w=Width] [-s=SelectorLead] [-f=angular|CamelCase] [-x=true|false (experiment, if true create no files, just show work)]");
 }
 
 function processDirectory(directory, callback) {
