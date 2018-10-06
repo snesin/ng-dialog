@@ -7,14 +7,20 @@ export interface I{#NAME}Dialog{$NAME}Data {
 export interface I{#NAME}Dialog{$NAME}Response {
 };
 interface I{$NAME}CloseAction {
-  action: 'CLOSE';
+  type: 'CLOSE';
   response?: I{#NAME}Dialog{$NAME}Response;
 }
 interface I{$NAME}ViewAction {
-  action: 'VIEW';
+  type: 'VIEW';
   view: DialogView;
 }
 export type {$NAME}Action = I{$NAME}CloseAction | I{$NAME}ViewAction;
+export function is{$NAME}CloseAction(action: {$NAME}Action | undefined): action is I{$NAME}CloseAction {
+  return action !== undefined && action.type === 'CLOSE';
+}
+export function is{$NAME}ViewAction(action: {$NAME}Action | undefined): action is I{$NAME}ViewAction {
+  return action !== undefined && action.type === 'VIEW';
+}
 
 @Component({
   selector: '{#TAGLEAD}-{#NAME}-{$NAME}',
@@ -34,14 +40,14 @@ export class {$NAME}Component implements OnInit, OnDestroy {
   }
   close(response?: I{#NAME}Dialog{$NAME}Response) {
     const action: I{$NAME}CloseAction = {
-      action: 'CLOSE',
+      type: 'CLOSE',
       response: response
     };
     this.emitter.emit(action);
   }
   changeView(view: DialogView) {
     const action: I{$NAME}ViewAction = {
-      action: 'VIEW',
+      type: 'VIEW',
       view: view
     };
     this.emitter.emit(action);
