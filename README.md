@@ -78,8 +78,8 @@ This tool handles two types of dialogs:
         UpperCamelCaseFormat, depending on the format option chosen. ie: `my-first` or `MyFirst`
         * `{$FILE+Component}` - the name of the view plus following text in either angular-standard.format or UpperCamelCaseFormat, depending on the format option chosen. ie: `my-first.component` or `MyFirstComponent`
         * `{$ID}` - the UPPER_UNDERSCORE_CASE name of the view. ie: `MY_FIRST`
-        * `{$REPEAT}content{$REPEATEND}` - repeats the content code once for each view.
-        * `{$REPEAT}content{$REPEATDELIM}delimiter{$REPEATEND}` - repeats the content code once for each view, separated by the delimeter code.
+        * `{$REPEAT}content{$REPEATEND}` - repeats the `content` code once for each view.
+        * `{$REPEAT}content{$REPEATDELIM}delimiter{$REPEATEND}` - repeats the `content` code once for each view, separated by the `delimeter` code.
 * All files in the template are copied, replacing tokens in the file's path, name, and contents, to the output folder.
     * Files with any of the `{$...}` multiple-view tokens are repeated once for each view.
     * All other files are copied once.
