@@ -36,9 +36,9 @@ This tool handles two types of dialogs:
 * If the dialog will have multiple views, pick names for them, also in UpperCamelCase.
 * Execute the following command line :
     * For a single view dialog, substitute `MyNew` with your dialog's UpperCamelCase name:  
-    `node ngDialog.js -c=ngDialog.cfg -d=MyNew -x=false`
+    `node ngDialog.js -c=ngDialog.cfg -t=Default -d=MyNew -x=false`
     * For a multiple view dialog, substitute `MyNew` with your dialog's UpperCamelCase name and `MyFirst,MySecond,MyThird` with a comma-separated list of your dialog's UpperCamelCase view names:  
-    `node ngDialog.js -c=ngDialog.cfg -d=MyNew -v=MyFirst,MySecond,MyThird -x=false`
+    `node ngDialog.js -c=ngDialog.cfg -t=DefaultWithViews -d=MyNew -v=MyFirst,MySecond,MyThird -x=false`
 * In your Angular.io project's `dialogs` directory, there will be a new directory with the skeleton for your dialog.
 * See section below on using your new dialog.
 
@@ -57,3 +57,30 @@ This tool handles two types of dialogs:
     `this.myNewDialog.open({});`
     * You can also listen for the result:  
     `this.myNewDialog.open({}).subscribe(result=>{console.log(result)});`
+* In the dialog's directory, flesh out the skeleton as needed to display the information required.
+
+## Creating new templates:
+* You can create new templates based on what is best for your application.
+* Templates come in two flavors: single-view or multiple-view.
+* ngDialog performs simple token replacement in file names and file contents:
+    * Note the `#` in the following tokens. These are used in both single-view and multiple-view templates.
+        * `{#NAME}` - the UpperCamelCase name of the dialog. ie: `MyNew`
+        * `{#FILE}` - the name of the dialog in either angular-standard.format or
+        UpperCamelCaseFormat, depending on the format option chosen. ie: `my-new` or `MyNew`
+        * `{#FILE+DialogComponent}` - the name of the dialog plus following text in either angular-standard.format or
+        UpperCamelCaseFormat, depending on the format option chosen. ie: `my-new-dialog.component` or `MyNewDialogComponent`
+        * `{#FORMAT+DialogService}` - **only** the following text in either angular-standard.format or UpperCamelCaseFormat, depending on the format option chosen. ie: `dialog.service` or `DialogService`
+        * `{#WIDTH}` - the width of the dialog box.
+        * `{#SELECTOR}` - the selector lead for views in the dialog box.
+    * Note the `$` in the following tokens. These are used only for multiple-view templates.
+        * `{$NAME}` - the UpperCamelCase name of the view. ie: `MyFirst`
+        * `{$FILE}` - the name of the view in either angular-standard.format or
+        UpperCamelCaseFormat, depending on the format option chosen. ie: `my-first` or `MyFirst`
+        * `{$FILE+Component}` - the name of the view plus following text in either angular-standard.format or UpperCamelCaseFormat, depending on the format option chosen. ie: `my-first.component` or `MyFirstComponent`
+        * `{$ID}` - the UPPER_UNDERSCORE_CASE name of the view. ie: `MY_FIRST`
+        * `{$REPEAT}content{$REPEATEND}` - repeats the content code once for each view.
+        * `{$REPEAT}content{$REPEATDELIM}delimiter{$REPEATEND}` - repeats the content code once for each view, separated by the delimeter code.
+* All files in the template are copied, replacing tokens in the file's path, name, and contents, to the output folder.
+    * Files with any of the `{$...}` multiple-view tokens are repeated once for each view.
+    * All other files are copied once.
+* An alternate template library path can be used by setting the `templateLibrary` variable to a relative path in the `ngDialog.cfg` file or `-l=path` on the command line.
