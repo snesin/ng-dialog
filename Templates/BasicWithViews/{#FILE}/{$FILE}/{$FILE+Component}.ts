@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, Input, Output, EventEmitter } from '@angular/core';
 
-import { DialogView } from '../{#FORMAT+DialogView}';
+import { {#NAME}DialogView } from '../{#FILE+DialogView}';
 
 /* This is the parameter type used to initialize the view. */
 export interface I{#NAME}Dialog{$NAME}Data {
@@ -25,7 +25,7 @@ export interface I{$NAME}CloseAction {
 /* Emit this type to change the dialog view. */
 export interface I{$NAME}ViewAction {
   type: 'VIEW';
-  view: DialogView;
+  view: {#NAME}DialogView;
 }
 
 /* This is the type that is a set of all action interfaces above. */
@@ -67,7 +67,7 @@ export class {$NAME}Component implements OnInit, OnDestroy {
     this.emitter.emit(action);
   }
   /* This changes the view of the dialog. */
-  changeView(view: DialogView) {
+  changeView(view: {#NAME}DialogView) {
     const action: I{$NAME}ViewAction = {
       type: 'VIEW',
       view: view

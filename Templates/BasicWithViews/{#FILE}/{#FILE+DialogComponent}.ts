@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 
-import { DialogView } from './DialogView';
+import { {#NAME}DialogView } from './{#FILE}DialogView';
 {$REPEAT}import { I{#NAME}Dialog{$NAME}Data, I{#NAME}Dialog{$NAME}Response, {$NAME}Action, is{$NAME}CloseAction, is{$NAME}ViewAction } from './{$FILE}/{$FILE+Component}';
 {$REPEATEND}
 /* This type is a collection of all the different view parameter types. */
@@ -10,7 +10,7 @@ export type I{#NAME}DialogData = {$REPEAT}I{#NAME}Dialog{$NAME}Data{$REPEATDELIM
 export type I{#NAME}DialogResponse = {$REPEAT}I{#NAME}Dialog{$NAME}Response{$REPEATDELIM} | {$REPEATEND};
 /* This type is a used to open the dialog to a view and with parameter data. */
 export type IViewAndData = {
-  view: DialogView;
+  view: {#NAME}DialogView;
   data: I{#NAME}DialogData;
 }
 
@@ -20,10 +20,12 @@ export type IViewAndData = {
   styleUrls: ['./{#FILE+DialogComponent}.css']
 })
 export class {#NAME}DialogComponent implements OnInit, OnDestroy {
+
   /* The current view. */
-  view: DialogView;
+  view: {#NAME}DialogView;
   /* The data passed in when opened. */
   data: I{#NAME}DialogData;
+
   /* The constructor gets the dialog reference and initialzes the view and its data. */
   constructor(public dialogRef: MatDialogRef<{#NAME}DialogComponent>, @Inject(MAT_DIALOG_DATA) viewAndData: IViewAndData) {
     this.view = viewAndData.view;
@@ -35,6 +37,7 @@ export class {#NAME}DialogComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
   }
+  
   /* Closes the dialog, returning some data from a view. */
   close(response: I{#NAME}DialogResponse | undefined): void {
     this.dialogRef.close(response);
