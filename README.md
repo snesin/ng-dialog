@@ -35,25 +35,25 @@ This tool handles two types of dialogs:
 * Pick a name for your dialog. It should be in UpperCamelCase. Dialog will be appended to the name, so do not include Dialog in the name.
 * If the dialog will have multiple views, pick names for them, also in UpperCamelCase.
 * Execute the following command line :
-    * For a single view dialog, substitute `MyNew` with your dialog's UpperCamelCase name:
-    ```node ngDialog.js -c=ngDialog.cfg -d=MyNew -x=false```
-    * For a multiple view dialog, substitute `MyNew` with your dialog's UpperCamelCase name and `MyFirst,MySecond,MyThird` with a comma-separated list of your dialog's UpperCamelCase view names:
-    ```node ngDialog.js -c=ngDialog.cfg -d=MyNew -v=MyFirst,MySecond,MyThird -x=false```
+    * For a single view dialog, substitute `MyNew` with your dialog's UpperCamelCase name:  
+    `node ngDialog.js -c=ngDialog.cfg -d=MyNew -x=false`
+    * For a multiple view dialog, substitute `MyNew` with your dialog's UpperCamelCase name and `MyFirst,MySecond,MyThird` with a comma-separated list of your dialog's UpperCamelCase view names:  
+    `node ngDialog.js -c=ngDialog.cfg -d=MyNew -v=MyFirst,MySecond,MyThird -x=false`
 * In your Angular.io project's `dialogs` directory, there will be a new directory with the skeleton for your dialog.
 * See section below on using your new dialog.
 
 ## To use a new dialog:
 * Import the dialog's module into your application module (or the module opening the dialog):
-    * Import the dialog's module reference:
-    ```import { MyNewDialogModule } from './dialogs/my-new-dialog/my-new-dialog.module';```
-    * Add the reference to the application module's `imports` list:
-    ```imports: [ ..., MyNewDialogModule ]```
+    * Import the dialog's module reference:  
+    `import { MyNewDialogModule } from './dialogs/my-new-dialog/my-new-dialog.module';`
+    * Add the reference to the application module's `imports` list:  
+    `imports: [ ..., MyNewDialogModule ]`
 * In the component opening the dialog:
-    * Import the dialog's service reference:
-    ```import { MyNewDialog } from './dialogs/my-new-dialog/my-new-dialog';```
-    * Inject the service into your component's `constructor`:
-    ```constructor (private myNewDialog: MyNewDialog) { };```
-    * Where needed, use the service to open the dialog:
-    ```this.myNewDialog.open({});```
-    * You can also listen for the result:
-    ```this.myNewDialog.open({}).subscribe(result=>{console.log(result)});```
+    * Import the dialog's service reference:  
+    `import { MyNewDialog } from './dialogs/my-new-dialog/my-new-dialog';`
+    * Inject the service into your component's `constructor`:  
+    `constructor (private myNewDialog: MyNewDialog) { };`
+    * Where needed, use the service to open the dialog:  
+    `this.myNewDialog.open({});`
+    * You can also listen for the result:  
+    `this.myNewDialog.open({}).subscribe(result=>{console.log(result)});`
