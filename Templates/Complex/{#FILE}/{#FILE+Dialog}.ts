@@ -16,7 +16,7 @@ export class {#NAME}Dialog {
   constructor(private dialogService: DialogService, private dialog: MatDialog) {
   }
   /* This does the actual opening based on the view method used below. */
-  private open<T>(view: DialogView, data: I{#NAME}DialogData): Observable<T> {
+  public open<T>(view: DialogView, data: I{#NAME}DialogData): Observable<T> {
     const viewAndData: IViewAndData = { view: view, data: data };
     return this.dialog.open({#NAME}DialogComponent, this.dialogService.getDialogConfig({#WIDTH}, viewAndData)).afterClosed();
   }
