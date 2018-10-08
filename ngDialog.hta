@@ -119,7 +119,6 @@ function readConfigFile(configFile) {
     if (contents[i].search(/^\s*(\w+)\s*=\s*(.+?)(?:\s+#.*)?\s*$/) === 0) {
       var key = RegExp.$1;
       var value = RegExp.$2;
-      writeToConsole("Set "+key+" to "+value);
       switch (key) {
       case "extends":
         readConfigFile(relativePath(configFile, value));
