@@ -41,7 +41,7 @@ export function is{$NAME}ViewAction(action: {$NAME}Action | undefined): action i
 
 /* This is the dialog view component. */
 @Component({
-  selector: '{#TAGLEAD}-{#NAME}-{$NAME}',
+  selector: '{#SELECTOR}-{#NAME}-{$NAME}',
   templateUrl: './{$FILE+Component}.html',
   styleUrls: ['./{$FILE+Component}.css']
 })
