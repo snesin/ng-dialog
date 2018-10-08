@@ -1,14 +1,16 @@
-var outputDirectory = null;      // -o=
-var templateFolder = null;       // -t=
-var dialogName = null;           // -d=
-var dialogViews = null;          // -v=
-var dialogWidth = 300;           // -w=
-var selectorLead = "app-dialog"; // -s=
-var fileNameFormat = "angular";  // -f=
-var justExperiment = false;      // -x
+var outputDirectory = null;        // -o=
+var templateLibrary = "Templates"; // -l=
+var templateName = "Default"; // -t=
+var dialogName = null;             // -d=
+var dialogViews = null;            // -v=
+var dialogWidth = 300;             // -w=
+var selectorLead = "app-dialog";   // -s=
+var fileNameFormat = "angular";    // -f=
+var justExperiment = false;        // -x
 
 var fs = require('fs');
 var createdDirectories = {};
+var templatePath;
 
 if (process.argv.length < 3)
   return showHelp();
@@ -16,11 +18,12 @@ if (process.argv.length < 3)
 processArguments(process.argv.slice(2), "", function () {
   if (!dialogName)
     return console.log("Missing dialog name: -d=DialogName");
-  if (!templateFolder)
-    return console.log("Missing template folder: -t=TemplateFolder");
+  if (!templateName)
+    return console.log("Missing template directory: -t=templateName");
   if (!outputDirectory)
     return console.log("Missing output path to Dialogs directory : -o=DialogsDirectory");
-  processDirectory(templateFolder, function (err) {
+  templatePath = (templateLibrary ? templateLibrary + "/" : "") + templateName;
+  processDirectory(templatePath, function (err) {
     if (err)
       return console.log(err);
     console.log("DONE");
@@ -67,7 +70,8 @@ function processArgument(flag, value, relativeTo, callback) {
       break;
     case "-v":
     case "dialogViews":
-      dialogViews = value.replace(/\W+/, ",").split(",");
+      value = value.replace(/\W+/, ",");
+      dialogViews = value.length > 0 ? value.split(",") : [];
       break;
     case "-w":
     case "dialogWidth":
@@ -81,9 +85,13 @@ function processArgument(flag, value, relativeTo, callback) {
     case "fileNameFormat":
       fileNameFormat = value;
       break;
+    case "-l":
+    case "templateLibrary":
+      templateLibrary = relativePath(relativeTo, value);
+      break;
     case "-t":
-    case "templateFolder":
-      templateFolder = relativePath(relativeTo, value);
+    case "templateName":
+      templateName = relativePath(relativeTo, value);
       break;
     case "-o":
     case "outputDirectory":
@@ -91,7 +99,7 @@ function processArgument(flag, value, relativeTo, callback) {
       break;
     case "-x":
     case "justExperiment":
-      justExperiment = value!=="false";
+      justExperiment = value !== "false";
       break;
     default:
       console.log("ignoring unknown flag " + flag);
@@ -108,7 +116,7 @@ function relativePath(from, to) {
 }
 
 function showHelp() {
-  console.log("ndDialog -o=DialogsOutputPath -t=TemplatePath -d=DialogName [-v=View1,View2,...] [-w=Width] [-s=SelectorLead] [-f=angular|CamelCase] [-x=true|false (experiment, if true create no files, just show work)]");
+  console.log("ndDialog -o=DialogsOutputPath -l=TemplateLibrary -t=TemplateDirectory -d=DialogName [-v=View1,View2,...] [-w=Width] [-s=SelectorLead] [-f=angular|CamelCase] [-x=true|false (experiment, if true create no files, just show work)]");
 }
 
 function processDirectory(directory, callback) {
@@ -149,14 +157,17 @@ function processItem(item, callback) {
 }
 
 function processFile(file, callback) {
+  var outFile = file.substr(templatePath.length + 1);
+  if (outFile.indexOf("{$") >= 0 && dialogViews.length === 0)
+    return callback && callback();
   fs.readFile(file, 'utf8', function (err, contents) {
     if (err) {
       if (callback)
         return callback(err);
       throw err;
     }
-    file = file.substr(templateFolder.length + 1);
-    if (file.indexOf("{$") >= 0) {
+    outFile = outFile.replace(/\{\$IF\}/g, "");
+    if (outFile.indexOf("{$") >= 0) {
       var count = dialogViews.length;
       function complete(err) {
         if (err && count > 0) {
@@ -169,9 +180,9 @@ function processFile(file, callback) {
           callback && callback();
       }
       for (var i = 0; i < dialogViews.length; i++)
-        saveFile(cookContents(file, i), cookContents(contents, i), complete);
+        saveFile(cookContents(outFile, i), cookContents(contents, i), complete);
     } else
-      saveFile(cookContents(file), cookContents(contents), callback);
+      saveFile(cookContents(outFile), cookContents(contents), callback);
   });
 }
 
@@ -225,15 +236,23 @@ function createFullDirectorySync(directory) {
 }
 
 function cookContents(contents, viewIndex) {
-  var repeat;
-  while (repeat = findRepeat(contents)) {
-    contents = repeat.lead;
+  var statement;
+  while (statement = findRepeat(contents)) {
+    contents = statement.before;
     for (var i = 0; i < dialogViews.length; i++) {
       if (i > 0)
-        contents += repeat.delimeter;
-      contents += cookContents(repeat.repeat, i);
+        contents += statement.tail;
+      contents += cookContents(statement.head, i);
     }
-    contents += repeat.tail;
+    contents += statement.after;
+  }
+  while (statement = findIf(contents)) {
+    contents = statement.before;
+    if (dialogViews.length > 0)
+      contents += statement.head;
+    else
+      contents += statement.tail;
+    contents += statement.after;
   }
   if (typeof (viewIndex) === "number") {
     contents = contents.replace(/\{\$NAME\}/g, nameFormat(dialogViews[viewIndex]));
@@ -249,37 +268,77 @@ function cookContents(contents, viewIndex) {
 }
 
 function findRepeat(contents) {
-  var index = contents.indexOf("{$REPEAT}");
+  return findStatement(contents, "{$REPEAT}", "{$REPEATDELIM}", "{$REPEATEND}");
+}
+
+function findIf(contents, missingEndOK) {
+  return findStatement(contents, "{$IF}", "{$IFELSE}", "{$IFEND}");
+}
+
+function findStatement(contents, start, middle, end) {
+  var common = start.substr(0, start.length - 1);
+  var index = contents.indexOf(start);
   if (index < 0)
     return null;
   var depth = 1;
   var leadEndIndex = index;
-  index += "{$REPEAT}".length;
+  index += start.length;
   var contentStartIndex = index;
-  var delimMarkStart = -1;
-  var delimMarkEnd = -1;
-  while ((index = contents.indexOf("{$REPEAT", index)) > 0) {
-    if (stringMatchesAt(contents, index, "{$REPEATEND}")) {
+  var middleMarkStart = -1;
+  var middleMarkEnd = -1;
+  while ((index = contents.indexOf(common, index)) > 0) {
+    if (stringMatchesAt(contents, index, end)) {
       depth--;
       if (depth === 0)
-        return {
-          lead: contents.substr(0, leadEndIndex),
-          repeat: contents.substr(contentStartIndex, delimMarkStart > 0 ? delimMarkStart - contentStartIndex : index - contentStartIndex),
-          delimeter: delimMarkStart > 0 ? contents.substr(delimMarkEnd, index - delimMarkEnd) : "",
-          tail: contents.substr(index + "{$REPEATEND}".length)
-        };
-    } else if (stringMatchesAt(contents, index, "{$REPEATDELIM}")) {
+        return cleanStatement({
+          before: contents.substr(0, leadEndIndex),
+          head: contents.substr(contentStartIndex, middleMarkStart > 0 ? middleMarkStart - contentStartIndex : index - contentStartIndex),
+          tail: middleMarkStart > 0 ? contents.substr(middleMarkEnd, index - middleMarkEnd) : "",
+          after: contents.substr(index + end.length)
+        });
+    } else if (stringMatchesAt(contents, index, middle)) {
       if (depth === 1) {
-        delimMarkStart = index;
-        delimMarkEnd = index + "{$REPEATDELIM}".length;
+        middleMarkStart = index;
+        middleMarkEnd = index + middle.length;
       }
-    } else if (stringMatchesAt(contents, index, "{$REPEAT}"))
+    } else if (stringMatchesAt(contents, index, start))
       depth++;
-    index += 9;
+    index += common.length;
   }
-  throw ("missing {$REPEATEND}");
+  throw ("missing " + end);
 }
-
+function cleanStatement(statement) {
+  if (statement.head.length === 0 && statement.tail.length === 0)
+    cleanSteatementPart(statement, 'before', 'after');
+  else if (statement.head.length === 0) {
+    cleanSteatementPart(statement, 'before', 'tail');
+    cleanSteatementPart(statement, 'tail', 'after');
+  } else if (statement.tail.length === 0) {
+    cleanSteatementPart(statement, 'before', 'head');
+    cleanSteatementPart(statement, 'head', 'after');
+  } else {
+    cleanSteatementPart(statement, 'before', 'head');
+    cleanSteatementPart(statement, 'head', 'tail');
+    cleanSteatementPart(statement, 'tail', 'after');
+  }
+  return statement;
+}
+function cleanSteatementPart(statement, preProp, postProp) {
+  var pre = statement[preProp];
+  var post = statement[postProp];
+  if ((pre.length === 0 || pre.charAt(pre.length - 1) === "\n") && (post.length === 0 || post.charAt(0) === "\n" || post.charAt(0) === "\r"))
+    if (pre.length > 0)
+      if (pre.length > 1 && pre.charAt(pre.length - 2) === "\r")
+        statement[preProp] = pre.substr(0, pre.length - 2);
+      else
+        statement[preProp] = pre.substr(0, pre.length - 1);
+    else
+      if (post.length > 0)
+        if (post.length > 1 && post.charAt(0) === "\r")
+          statement[postProp] = post.substr(2);
+        else
+          statement[postProp] = post.substr(1);
+}
 function stringMatchesAt(value, index, toMatch) {
   return index + toMatch.length > value.length ? false : value.substr(index, toMatch.length) === toMatch;
 }

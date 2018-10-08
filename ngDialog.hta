@@ -33,7 +33,7 @@ body,table,input {
   <table>
     <tr>
       <td align=right nowrap>Dialog Name:</td>
-      <td nowrap><input type=text class="code leader" id="dialogName" style="text-align:right" value="Authentication"
+      <td nowrap><input type=text class="code leader" id="dialogName" style="text-align:right" value=""
           size=30 onkeyup="updateDependencies()"><span class="code trailer">Dialog</span></td>
     </tr>
     <tr>
@@ -43,11 +43,15 @@ body,table,input {
     </tr>
     <tr>
       <td align=right nowrap>View Names:</td>
-      <td><input type=text class="code" id="dialogViews" style="width:100%" value="LogIn,SignUp" onkeyup="updateDependencies()"></td>
+      <td><input type=text class="code" id="dialogViews" style="width:100%" value=""></td>
     </tr>
     <tr>
-      <td align=right nowrap>Template:</td>
-      <td><select class="code" id="templateFolder" style="width:100%" value="" onchange="updateDependencies()"></select></td>
+      <td align=right nowrap>Template Library:</td>
+      <td><input type=text class="code" id="templateLibrary" style="width:100%" value="" onkeyup="updateDependencies()"></td>
+    </tr>
+    <tr>
+      <td align=right nowrap>Template Name:</td>
+      <td><select class="code" id="templateName" style="width:100%" value="" onchange="updateDependencies()"></select></td>
     </tr>
     <tr>
       <td align=right nowrap>Selector:</td>
@@ -92,23 +96,18 @@ var config = {
   dialogName: "",
   dialogWidth: 200,
   dialogViews: "",
-  templateFolder: "",
+  templateLibrary: "Templates",
+  templateName: "",
   selectorLead: "app-Dialog",
   fileNameFormat: closestFileNameFormat(),
   justExperiment: false,
-  outputDirectory: "",
-  templateLibrary: "Templates"
+  outputDirectory: ""
 };
 
 if (fso.FileExists(defaultConfigFile))
   readConfigFile(defaultConfigFile);
 else if (defaultConfigFile)
   writeToConsole("Settings file not found: "+defaultConfigFile);
-
-for (var subfolders = new Enumerator(fso.GetFolder(config.templateLibrary).SubFolders); !subfolders.atEnd(); subfolders.moveNext()) {
-  var template=config.templateLibrary+"/"+subfolders.item().Name;
-  templateList.push({ path: template, isComplex: isTemplateComplex(fso.GetFolder(template)) });
-}
 
 function readConfigFile(configFile) {
   writeToConsole("Loading settings from "+configFile);
@@ -120,6 +119,7 @@ function readConfigFile(configFile) {
     if (contents[i].search(/^\s*(\w+)\s*=\s*(.+?)(?:\s+#.*)?\s*$/) === 0) {
       var key = RegExp.$1;
       var value = RegExp.$2;
+      writeToConsole("Set "+key+" to "+value);
       switch (key) {
       case "extends":
         readConfigFile(relativePath(configFile, value));
@@ -172,43 +172,45 @@ function body_onload() {
   document.getElementById("dialogName").value = config.dialogName || "";
   document.getElementById("dialogWidth").value = config.dialogWidth || 200;
   document.getElementById("dialogViews").value = config.dialogViews || "";
+  document.getElementById("templateLibrary").value = config.templateLibrary || "Templates";
+  document.getElementById("templateName").value = config.templateName || "Default";
   document.getElementById("selectorLead").value = config.selectorLead || "app-Dialog";
   document.getElementById("fileNameFormat_" + config.fileNameFormat).checked = true;
   document.getElementById("justExperiment").checked = !!config.justExperiment;
   document.getElementById("outputDirectory").value = config.outputDirectory || "";
   updateDependencies();
 }
-var lastComplex = null;
+var lastLibrary = null;
 function updateDependencies() {
-  var dialogName = document.getElementById("dialogName").value.replace(/\W/g, "");
-  var dialogViews = document.getElementById("dialogViews").value.replace(/\W/g, "");
-  var templateFolder = document.getElementById("templateFolder").value.replace(/\W/g, "");
-  var outputDirectory = document.getElementById("outputDirectory").value.replace(/\W/g, "");
-  var isComplex = dialogViews.length > 0;
-  if (isComplex !== lastComplex) {
-    var templateFolder = document.getElementById("templateFolder");
-    var prevValue = templateFolder.value || config.templateFolder;
-    while (templateFolder.length > 0)
-      templateFolder.remove(0);
-    for (var i = 0; i < templateList.length; i++)
-      if (templateList[i].isComplex === isComplex) {
-        var option = document.createElement("option");
-        option.value = templateList[i].path;
-        if (templateList[i].path === prevValue)
-          option.selected = true;
-        option.innerText = templateList[i].path;
-        templateFolder.appendChild(option);
-      }
-    lastComplex = isComplex;
+  var dialogName = document.getElementById("dialogName");
+  var dialogViews = document.getElementById("dialogViews");
+  var templateLibrary = document.getElementById("templateLibrary");
+  var templateName = document.getElementById("templateName");
+  var outputDirectory = document.getElementById("outputDirectory");
+  if (templateLibrary.value!==lastLibrary) {
+    var prevValue = templateName.value || config.templateName;
+    while (templateName.length > 0)
+      templateName.remove(0);
+    if (templateLibrary.value && fso.FolderExists(templateLibrary.value))
+      for (var subfolders = new Enumerator(fso.GetFolder(templateLibrary.value).SubFolders); !subfolders.atEnd(); subfolders.moveNext()) {
+          var directory=subfolders.item().Name;
+          var option = document.createElement("option");
+          option.value = directory;
+          if (directory === prevValue)
+            option.selected = true;
+          option.innerText = directory;
+          templateName.appendChild(option);
+        }
+    lastLibrary=templateLibrary.value;
   }
   var label = document.getElementById("selectorLead_label");
-  label.innerText = dialogName || "MyDialog";
+  label.innerText = dialogName.value || "MyDialog";
   var label = document.getElementById("fileNameFormat_angular_label");
-  label.innerText = angularStandardName(dialogName) || "angular-standard";
+  label.innerText = angularStandardName(dialogName.value) || "angular-standard";
   var label = document.getElementById("fileNameFormat_CamelCase_label");
-  label.innerText = dialogName || "SensibleCamelCase";
+  label.innerText = dialogName.value || "SensibleCamelCase";
 
-  document.getElementById("createButton").disabled = !dialogName || !templateFolder || !outputDirectory;
+  document.getElementById("createButton").disabled = !dialogName.value || !templateName.value || !outputDirectory.value;
 }
 function angularStandardName(name) {
   return name.replace(/([a-z])([A-Z])/g, function ($0, $1, $2) { return $1 + "-" + $2; }).toLowerCase();
@@ -221,7 +223,8 @@ function writeToConsole(value) {
 function generateDialogSkeleton() {
   var dialogName = document.getElementById("dialogName").value.replace(/\W/g, "");
   var dialogViews = document.getElementById("dialogViews").value.replace(/^\W+/, "").replace(/\W+$/, "").replace(/\W+/, ",");
-  var templateFolder = document.getElementById("templateFolder").value.replace(/^\s+/, "").replace(/\s+$/, "");
+  var templateLibrary = document.getElementById("templateLibrary").value.replace(/^\s+/, "").replace(/\s+$/, "");
+  var templateName = document.getElementById("templateName").value.replace(/^\s+/, "").replace(/\s+$/, "");
   var outputDirectory = document.getElementById("outputDirectory").value.replace(/^\s+/, "").replace(/\s+$/, "");
   var dialogWidth = document.getElementById("dialogWidth").value;
   var fileNameFormat = document.getElementById("fileNameFormat_CamelCase").checked ? "CamelCase" : "angular";
@@ -232,7 +235,8 @@ function generateDialogSkeleton() {
   commandLine += "node";
   commandLine += " ngDialog.js";
   commandLine += " \"-o=" + outputDirectory + "\"";
-  commandLine += " \"-t=" + templateFolder + "\"";
+  commandLine += " \"-l=" + templateLibrary + "\"";
+  commandLine += " \"-t=" + templateName + "\"";
   commandLine += " \"-d=" + dialogName + "\"";
   commandLine += " \"-v=" + dialogViews + "\"";
   commandLine += " \"-w=" + dialogWidth + "\"";

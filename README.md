@@ -38,7 +38,7 @@ This tool handles two types of dialogs:
     * For a single view dialog, substitute `MyNew` with your dialog's UpperCamelCase name:  
     `node ngDialog.js -c=ngDialog.cfg -t=Default -d=MyNew -x=false`
     * For a multiple view dialog, substitute `MyNew` with your dialog's UpperCamelCase name and `MyFirst,MySecond,MyThird` with a comma-separated list of your dialog's UpperCamelCase view names:  
-    `node ngDialog.js -c=ngDialog.cfg -t=DefaultWithViews -d=MyNew -v=MyFirst,MySecond,MyThird -x=false`
+    `node ngDialog.js -c=ngDialog.cfg -t=Default -d=MyNew -v=MyFirst,MySecond,MyThird -x=false`
 * In your Angular.io project's `dialogs` directory, there will be a new directory with the skeleton for your dialog.
 * See section below on using your new dialog.
 
@@ -73,6 +73,8 @@ This tool handles two types of dialogs:
         * `{#WIDTH}` - the width of the dialog box.
         * `{#SELECTOR}` - the selector lead for views in the dialog box.
     * Note the `$` in the following tokens. These are used only for multiple-view templates.
+        * `{$IF}thencontent{$IFEND}` - inserts the `thencontent` code only if there are views.
+        * `{$IF}thencontent{$IFELSE}elsecontent{$IFEND}` - inserts the `thencontent` code if there are views, else it inserts the `elsecontent` code.
         * `{$NAME}` - the UpperCamelCase name of the view. ie: `MyFirst`
         * `{$FILE}` - the name of the view in either angular-standard.format or
         UpperCamelCaseFormat, depending on the format option chosen. ie: `my-first` or `MyFirst`
@@ -80,7 +82,13 @@ This tool handles two types of dialogs:
         * `{$ID}` - the UPPER_UNDERSCORE_CASE name of the view. ie: `MY_FIRST`
         * `{$REPEAT}content{$REPEATEND}` - repeats the `content` code once for each view.
         * `{$REPEAT}content{$REPEATDELIM}delimiter{$REPEATEND}` - repeats the `content` code once for each view, separated by the `delimeter` code.
+
 * All files in the template are copied, replacing tokens in the file's path, name, and contents, to the output folder.
-    * Files with any of the `{$...}` multiple-view tokens are repeated once for each view.
+    * Files with the `{$FILE}` or `{$NAME}` multiple-view tokens anywhere in their path are copied once for each view.
+    * Files with the `{$IF}` multiple-view token anywhere in their path are copied if there are multiple views:
+        * The `{$IF}` token is removed from the path.
+        * Do not close with `{$IFEND}` tokens in file paths.
+        * If the file path also has `{$FILE}` or `{$NAME}` multiple-view tokens, the file is copied once for each view.
+        * If the file path has no other multiple-view tokens, the file is copied once.
     * All other files are copied once.
 * An alternate template library path can be used by setting the `templateLibrary` variable to a relative path in the `ngDialog.cfg` file or `-l=path` on the command line.

@@ -1,3 +1,11 @@
+{$IF}
+{$REPEAT}
+<h1 *ngIf="view='{$ID}'" mat-dialog-title>{#NAME}Dialog {$NAME} Header</h1>
+{$REPEATEND}
+{$REPEAT}
+<{#SELECTOR}-{#NAME}-{$NAME} *ngIf="view='{$ID}'" (action)="action{$NAME}($event)" [data]="data"></{#SELECTOR}-{#NAME}-{$NAME}>
+{$REPEATEND}
+{$IFELSE}
 <h1 mat-dialog-title>{#NAME}Dialog Header</h1>
 <div mat-dialog-content>
    {#NAME}Dialog Content
@@ -6,3 +14,4 @@
   <button mat-button (click)="close()">Ok</button>
   <button mat-button [mat-dialog-close]>Cancel</button>
 </div>
+{$IFEND}
