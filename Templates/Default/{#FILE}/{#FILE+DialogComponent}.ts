@@ -41,7 +41,7 @@ export class {#NAME}DialogComponent implements OnInit, OnDestroy {
   }
   
   /* Closes the dialog, returning some data from a view. */
-  close(response: I{#NAME}DialogResponse | undefined): void {
+  close(response?: I{#NAME}DialogResponse | undefined): void {
     this.dialogRef.close(response);
   }
 {$REPEAT}
@@ -81,7 +81,7 @@ export class {#NAME}DialogComponent implements OnInit, OnDestroy {
   }
 
   /* This method closes the dialog, returning a response. */
-  close(response: I{#NAME}DialogResponse | undefined): void {
+  close(response?: I{#NAME}DialogResponse | undefined): void {
     this.dialogRef.close(response);
   }
   
