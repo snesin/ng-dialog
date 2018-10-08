@@ -82,7 +82,6 @@ This tool handles two types of dialogs:
         * `{$ID}` - the UPPER_UNDERSCORE_CASE name of the view. ie: `MY_FIRST`
         * `{$REPEAT}content{$REPEATEND}` - repeats the `content` code once for each view.
         * `{$REPEAT}content{$REPEATDELIM}delimiter{$REPEATEND}` - repeats the `content` code once for each view, separated by the `delimeter` code.
-
 * All files in the template are copied, replacing tokens in the file's path, name, and contents, to the output folder.
     * Files with the `{$FILE}` or `{$NAME}` multiple-view tokens anywhere in their path are copied once for each view.
     * Files with the `{$IF}` multiple-view token anywhere in their path are copied if there are multiple views:
