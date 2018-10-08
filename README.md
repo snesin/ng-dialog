@@ -63,7 +63,7 @@ This tool handles two types of dialogs:
 * You can create new templates based on what is best for your application.
 * Templates should support both flavors: single-view and multiple-view.
 * ngDialog performs simple token replacement in file names and file contents:
-    * Note the `#` in the following tokens. These are used in both single-view and multiple-view templates.
+    * Note the `#` in the following tokens. These are used insert dialog properties.
         * `{#NAME}` - the UpperCamelCase name of the dialog. ie: `MyNew`
         * `{#FILE}` - the name of the dialog in either angular-standard.format or
         UpperCamelCaseFormat, depending on the format option chosen. ie: `my-new` or `MyNew`
@@ -72,7 +72,7 @@ This tool handles two types of dialogs:
         * `{#FORMAT+DialogService}` - **only** the following text in either angular-standard.format or UpperCamelCaseFormat, depending on the format option chosen. ie: `dialog.service` or `DialogService`
         * `{#WIDTH}` - the width of the dialog box.
         * `{#SELECTOR}` - the selector lead for views in the dialog box.
-    * Note the `$` in the following tokens. These are used only for multiple-view templates.
+    * Note the `$` in the following tokens. These are used to insert view properties.
         * `{$IF}thencontent{$IFEND}` - inserts the `thencontent` code only if there are views.
         * `{$IF}thencontent{$IFELSE}elsecontent{$IFEND}` - inserts the `thencontent` code if there are views, else it inserts the `elsecontent` code.
         * `{$NAME}` - the UpperCamelCase name of the view. ie: `MyFirst`
