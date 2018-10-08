@@ -1,9 +1,9 @@
 {$IF}
 {$REPEAT}
-<h1 *ngIf="view='{$ID}'" mat-dialog-title>{#NAME}Dialog {$NAME} Header</h1>
+<h1 *ngIf="view==='{$ID}'" mat-dialog-title>{#NAME}Dialog {$NAME} Header</h1>
 {$REPEATEND}
 {$REPEAT}
-<{#SELECTOR}-{#NAME}-{$NAME} *ngIf="view='{$ID}'" (action)="action{$NAME}($event)" [data]="data"></{#SELECTOR}-{#NAME}-{$NAME}>
+<{#SELECTOR}-{#NAME}-{$NAME} *ngIf="view==='{$ID}'" (action)="action{$NAME}($event)" [data]="data"></{#SELECTOR}-{#NAME}-{$NAME}>
 {$REPEATEND}
 {$IFELSE}
 <h1 mat-dialog-title>{#NAME}Dialog Header</h1>
