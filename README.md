@@ -61,7 +61,7 @@ This tool handles two types of dialogs:
 
 ## Creating new templates:
 * You can create new templates based on what is best for your application.
-* Templates come in two flavors: single-view or multiple-view.
+* Templates should support both flavors: single-view and multiple-view.
 * ngDialog performs simple token replacement in file names and file contents:
     * Note the `#` in the following tokens. These are used in both single-view and multiple-view templates.
         * `{#NAME}` - the UpperCamelCase name of the dialog. ie: `MyNew`
